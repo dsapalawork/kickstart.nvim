@@ -91,7 +91,11 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
+
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+vim.opt.termguicolors = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -144,8 +148,9 @@ vim.opt.splitbelow = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
+local listchars_default = { tab = '» ', trail = '·', nbsp = '␣' }
 vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.listchars = listchars_default
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -155,6 +160,8 @@ vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
+
+vim.wo.wrap = false
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -214,6 +221,45 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
   end
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
+
+-- vim.cmd 'source ~/.config/nvim/colors.vim'
+
+vim.keymap.set('n', '<C-L>', ':nohlsearch<CR>', { desc = 'Clear highlighting', silent = true })
+
+vim.keymap.set('n', '<leader>a', 'ggVG', { desc = 'Select all', silent = true })
+
+local default_theme = 'base16-tomorrow-night'
+
+local function get_tinty_theme()
+  local theme_name = vim.fn.system 'tinty current &> /dev/null && tinty current'
+
+  if vim.v.shell_error ~= 0 then
+    return default_theme
+  else
+    return vim.trim(theme_name)
+  end
+end
+
+local function handle_focus_gained()
+  local new_theme_name = get_tinty_theme()
+  local current_theme_name = vim.g.colors_name
+
+  if current_theme_name ~= new_theme_name then
+    vim.cmd('colorscheme ' .. new_theme_name)
+  end
+end
+
+vim.g.tinted_colorspace = 256
+local current_theme_name = get_tinty_theme()
+
+vim.cmd('colorscheme ' .. current_theme_name)
+
+vim.api.nvim_create_autocmd('FocusGained', {
+  group = vim.api.nvim_create_augroup('tinty-apply', { clear = true }),
+  callback = handle_focus_gained,
+})
+
+local ibl_enabled = false
 
 -- [[ Configure and install plugins ]]
 --
@@ -387,6 +433,16 @@ require('lazy').setup({
       -- Telescope picker. This is really useful to discover what Telescope can
       -- do as well as how to actually do it!
 
+      local function filename_first_path_display(_, path)
+        local tail = vim.fs.basename(path)
+        local parent = vim.fs.dirname(path)
+        if parent == '.' then
+          return tail
+        else
+          return string.format('%s\t\t%s', tail, parent)
+        end
+      end
+
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
       require('telescope').setup {
@@ -399,6 +455,10 @@ require('lazy').setup({
         --   },
         -- },
         -- pickers = {}
+        defaults = {
+          path_display = filename_first_path_display,
+          file_ignore_patterns = { '^.git/' },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -670,6 +730,7 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+        bashls = {},
 
         lua_ls = {
           -- cmd = { ... },
@@ -884,25 +945,55 @@ require('lazy').setup({
     end,
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  -- { -- You can easily change to a different colorscheme.
+  --   -- Change the name of the colorscheme plugin below, and then
+  --   -- change the command in the config to whatever the name of that colorscheme is.
+  --   --
+  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  --   'folke/tokyonight.nvim',
+  --   priority = 1000, -- Make sure to load this before all the other start plugins.
+  --   config = function()
+  --     ---@diagnostic disable-next-line: missing-fields
+  --     require('tokyonight').setup {
+  --       styles = {
+  --         comments = { italic = false }, -- Disable italics in comments
+  --       },
+  --     }
+  --
+  --     -- Load the colorscheme here.
+  --     -- Like many other themes, this one has different styles, and you could load
+  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+  --     vim.cmd.colorscheme 'tokyonight-night'
+  --   end,
+  -- },
+
+  {
+    'tinted-theming/tinted-vim',
+  },
+
+  {
+    'stevearc/oil.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    lazy = false,
     config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
+      require('oil').setup {
+        columns = { 'icon' },
+        default_file_explorer = true,
+        delete_to_trash = true,
+        view_options = {
+          show_hidden = true,
+          is_always_hidden = function(name, _)
+            local folder_skip = { 'dev-tools.locks', 'dune.lock', '_build' }
+            return vim.tbl_contains(folder_skip, name)
+          end,
         },
       }
 
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- Open parent directory in current window
+      vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
+
+      -- Open parent directory in floating window
+      vim.keymap.set('n', '<space>-', '<CMD>Oil --float<CR>', { desc = 'Open parent directory in floating window' })
     end,
   },
 
@@ -970,6 +1061,112 @@ require('lazy').setup({
     --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+  },
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require('nvim-tree').setup {
+        hijack_cursor = true,
+        system_open = {
+          cmd = 'open',
+        },
+        update_focused_file = {
+          update_root = true,
+        },
+        view = {
+          signcolumn = 'auto',
+          adaptive_size = 20,
+        },
+        renderer = {
+          group_empty = true,
+          icons = {
+            show = {
+              git = true,
+              file = false,
+              folder = false,
+              folder_arrow = true,
+            },
+            glyphs = {
+              folder = {
+                arrow_closed = '⏵',
+                arrow_open = '⏷',
+              },
+              git = {
+                unstaged = '✗',
+                staged = '✓',
+                unmerged = '⌥',
+                renamed = '➜',
+                untracked = '★',
+                deleted = '⊖',
+                ignored = '◌',
+              },
+            },
+          },
+        },
+        filters = {
+          dotfiles = true,
+        },
+      }
+
+      vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<cr>', { desc = 'Open nvim-tree', silent = true })
+      -- TODO: come up with a good shortcut
+      -- vim.keymap.set('n', '<leader>', ':NvimTreeFindFile<cr>', { desc = 'Open nvim-tree file finding', silent = true })
+    end,
+  },
+
+  {
+    'rmagatti/auto-session',
+    lazy = false,
+
+    ---enables autocomplete for opts
+    ---@module "auto-session"
+    ---@type AutoSession.Config
+    opts = {
+      suppressed_dirs = { '~/', '~/Projects', '~/Downloads', '/' },
+      -- log_level = 'debug',
+    },
+  },
+
+  {
+    'CopilotC-Nvim/CopilotChat.nvim',
+    dependencies = {
+      { 'github/copilot.vim' }, -- or zbirenbaum/copilot.lua
+      { 'nvim-lua/plenary.nvim', branch = 'master' }, -- for curl, log and async functions
+    },
+    build = 'make tiktoken', -- Only on MacOS or Linux
+    opts = {
+      -- See Configuration section for options
+    },
+    -- See Commands section for default commands if you want to lazy load on them
+  },
+
+  {
+    'lukas-reineke/indent-blankline.nvim',
+    main = 'ibl',
+    ---@module "ibl"
+    ---@type ibl.config
+    opts = {
+      enabled = ibl_enabled,
+    },
+    config = function(_, opts)
+      --   -- See `:help indent-blankline` for more information
+      require('ibl').setup(opts)
+
+      vim.keymap.set('n', '<leader>b', function()
+        if ibl_enabled then
+          vim.opt.listchars = listchars_default
+          vim.cmd.IBLDisable()
+          ibl_enabled = false
+        else
+          vim.opt.listchars = { tab = '| ', trail = '·', nbsp = '␣' }
+          vim.cmd.IBLEnable()
+          ibl_enabled = true
+        end
+      end, { desc = 'Toggle IBL' })
+    end,
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
