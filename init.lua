@@ -106,7 +106,7 @@ vim.opt.termguicolors = true
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -148,9 +148,52 @@ vim.opt.splitbelow = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
-local listchars_default = { tab = '» ', trail = '·', nbsp = '␣' }
-vim.opt.list = true
+-- local listchars_default = { tab = '» ', trail = '·', nbsp = '␣' }
+local listchars_default = {
+  tab = '» ', -- Show tabs as a right-pointing arrow
+  eol = '↩', -- Show end-of-line as a return arrow
+  trail = '.', -- Show trailing spaces as a dot
+  nbsp = '␣', -- Show non-breaking spaces as a special character
+  extends = '›', -- Show when text extends beyond the right edge of the window
+  precedes = '‹', -- Show when text extends beyond the left edge of the window
+  space = '·', -- Show spaces as a special character
+}
+-- vim.opt.list = true
 vim.opt.listchars = listchars_default
+
+-- highlight trailing whitespace as red
+local highlight_trailing_whitespace_highlight_name = 'TrailingWhitespace'
+local highlight_trailing_whitespace_augroup_name = 'HighlightTrailingWhitespace'
+vim.cmd.highlight { highlight_trailing_whitespace_highlight_name, 'ctermbg=red guibg=red' }
+vim.api.nvim_create_augroup(highlight_trailing_whitespace_augroup_name, { clear = true })
+vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
+  desc = 'Highlight trailing whitespace when entering the buffer',
+  group = highlight_trailing_whitespace_augroup_name,
+  callback = function()
+    vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+$/]] }
+  end,
+})
+vim.api.nvim_create_autocmd('InsertEnter', {
+  desc = 'Stop highlighting trailing whitespace while in insert mode at the end of the offending line',
+  group = highlight_trailing_whitespace_augroup_name,
+  callback = function()
+    vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+\%#\@<!$/]] }
+  end,
+})
+vim.api.nvim_create_autocmd('InsertLeave', {
+  desc = 'Resume highlighting trailing whitespace after leaving insert mode',
+  group = highlight_trailing_whitespace_augroup_name,
+  callback = function()
+    vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+$/]] }
+  end,
+})
+vim.api.nvim_create_autocmd('BufWinLeave', {
+  desc = 'Clear trailing whitespace highlights when leaving the buffer',
+  group = highlight_trailing_whitespace_augroup_name,
+  callback = function()
+    vim.cmd [[call clearmatches()]]
+  end,
+})
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -162,6 +205,15 @@ vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
 vim.wo.wrap = false
+
+vim.keymap.set('n', '<leader>tw', ':set invwrap<CR>:set wrap?<CR>', { desc = 'Toggle text wrap' })
+
+vim.keymap.set('n', '<leader>non', ':set nu<CR>:set rnu<CR>', { desc = 'Toggle line numbers on' })
+vim.keymap.set('n', '<leader>nor', ':set nonu<CR>:set rnu<CR>', { desc = 'Toggle only relative line numbers on' })
+vim.keymap.set('n', '<leader>noa', ':set nu<CR>:set nornu<CR>', { desc = 'Toggle only absolute line numbers on' })
+vim.keymap.set('n', '<leader>nof', ':set nonu<CR>:set nornu<CR>', { desc = 'Toggle line numbers off' })
+
+vim.keymap.set('n', '<leader>lt', ':set list!<CR>', { desc = 'Toggle non-printable chars on and off' })
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -209,6 +261,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.highlight.on_yank()
   end,
 })
+
+vim.keymap.set('n', '<leader>Y', '^y$', { desc = 'Copy the entire line without the line ending' })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
