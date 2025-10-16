@@ -1271,14 +1271,16 @@ require('lazy').setup({
 
   {
     'akinsho/bufferline.nvim',
-    version = "*",
+    version = '*',
     dependencies = 'nvim-tree/nvim-web-devicons',
     config = function()
-      local bufferline = require('bufferline')
+      local bufferline = require 'bufferline'
       bufferline.setup {
         options = {
-          numbers = 'ordinal',
-        }
+          numbers = function(opts)
+            return string.format('%s', opts.ordinal)
+          end,
+        },
       }
     end,
   },
