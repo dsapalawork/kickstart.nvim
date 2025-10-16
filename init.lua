@@ -1185,6 +1185,18 @@ require('lazy').setup({
   },
 
   {
+    'greggh/claude-code.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim', -- Required for git operations
+    },
+    config = function()
+      require('claude-code').setup {}
+
+      vim.keymap.set('n', '<leader>cc', '<cmd>ClaudeCode<CR>', { desc = 'Toggle Claude Code' })
+    end,
+  },
+
+  {
     'CopilotC-Nvim/CopilotChat.nvim',
     dependencies = {
       { 'github/copilot.vim' }, -- or zbirenbaum/copilot.lua
@@ -1254,6 +1266,20 @@ require('lazy').setup({
       end
 
       vim.api.nvim_set_keymap('n', '<leader>g', '<cmd>lua _lazygit_toggle()<CR>', { desc = 'Open LazyGit in a terminal', noremap = true, silent = true })
+    end,
+  },
+
+  {
+    'akinsho/bufferline.nvim',
+    version = "*",
+    dependencies = 'nvim-tree/nvim-web-devicons',
+    config = function()
+      local bufferline = require('bufferline')
+      bufferline.setup {
+        options = {
+          numbers = 'ordinal',
+        }
+      }
     end,
   },
 
