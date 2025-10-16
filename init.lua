@@ -1277,6 +1277,7 @@ require('lazy').setup({
       local bufferline = require 'bufferline'
       bufferline.setup {
         options = {
+          mode = 'tabs',
           numbers = function(opts)
             return string.format('%s', opts.ordinal)
           end,
