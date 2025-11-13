@@ -1266,6 +1266,32 @@ require('lazy').setup({
       end
 
       vim.api.nvim_set_keymap('n', '<leader>g', '<cmd>lua _lazygit_toggle()<CR>', { desc = 'Open LazyGit in a terminal', noremap = true, silent = true })
+
+      local term = terminal:new {
+        cmd = 'bash',
+        dir = 'git_dir',
+        direction = 'float',
+        float_opts = {
+          border = 'double',
+        },
+        -- function to run on opening the terminal
+        on_open = function(t)
+          vim.cmd 'startinsert!'
+          -- clear any existing matches to avoid leftover highlights
+          vim.cmd [[call clearmatches()]]
+          vim.api.nvim_buf_set_keymap(t.bufnr, 't', '<C-;>', [[<C-\><C-n><cmd>close<CR>]], { noremap = true, silent = true })
+        end,
+        -- function to run on closing the terminal
+        on_close = function()
+          vim.cmd 'startinsert!'
+        end,
+      }
+
+      function _term_toggle()
+        term:toggle()
+      end
+
+      vim.api.nvim_set_keymap('n', '<C-;>', '<cmd>lua _term_toggle()<CR>', { desc = 'Open a terminal', noremap = true, silent = true })
     end,
   },
 
