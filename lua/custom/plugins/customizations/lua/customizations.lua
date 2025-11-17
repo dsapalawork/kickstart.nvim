@@ -85,3 +85,6 @@ end
 --     file_ignore_patterns = { '^.git/' },
 --   },
 -- }
+
+vim.keymap.set('t', '<c-\\><c-\\>', '<c-\\><c-n>', { noremap = true })
+vim.keymap.set('t', '<c-[><c-[>', '<c-\\><c-n>', { noremap = true })
