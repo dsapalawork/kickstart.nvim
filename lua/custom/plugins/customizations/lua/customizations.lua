@@ -1,7 +1,7 @@
-vim.g.have_nerd_font = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 vim.opt.termguicolors = true
+vim.opt.timeoutlen = 300
 
 vim.wo.wrap = false
 
@@ -11,8 +11,6 @@ vim.keymap.set('n', '<leader>non', ':set nu<CR>:set rnu<CR>', { desc = 'Toggle l
 vim.keymap.set('n', '<leader>nor', ':set nonu<CR>:set rnu<CR>', { desc = 'Toggle only relative line numbers on' })
 vim.keymap.set('n', '<leader>noa', ':set nu<CR>:set nornu<CR>', { desc = 'Toggle only absolute line numbers on' })
 vim.keymap.set('n', '<leader>nof', ':set nonu<CR>:set nornu<CR>', { desc = 'Toggle line numbers off' })
-
-vim.keymap.set('n', '<leader>lt', ':set list!<CR>', { desc = 'Toggle non-printable chars on and off' })
 
 vim.keymap.set('n', '<leader>Y', '^y$', { desc = 'Copy the entire line without the line ending' })
 
@@ -31,6 +29,9 @@ local listchars_default = {
   space = '·', -- Show spaces as a special character
 }
 vim.opt.listchars = listchars_default
+vim.opt.list = false -- Start with 'list' mode off
+
+vim.keymap.set('n', '<leader>lt', ':set list!<CR>', { desc = 'Toggle non-printable chars on and off' })
 
 -- highlight trailing whitespace as red
 local highlight_trailing_whitespace_highlight_name = 'TrailingWhitespace'
@@ -67,6 +68,7 @@ vim.api.nvim_create_autocmd('BufWinLeave', {
 })
 
 vim.keymap.set('n', '<C-L>', ':nohlsearch<CR>', { desc = 'Clear highlighting', silent = true })
+
 local function filename_first_path_display(_, path)
   local tail = vim.fs.basename(path)
   local parent = vim.fs.dirname(path)
