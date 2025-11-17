@@ -32,6 +32,7 @@ return {
       vim.api.nvim_create_user_command('TermLazygit', function(args)
         lazygit.cwd = args.args and vim.fn.expand(args.args)
         lazygit:toggle(nil, true)
+        vim.cmd 'startinsert'
       end, { nargs = '?' })
       vim.api.nvim_set_keymap('n', '<leader>g', '<cmd>TermLazygit<CR>', { desc = 'Open LazyGit in a terminal', noremap = true, silent = true })
 
@@ -42,6 +43,7 @@ return {
       }
       vim.api.nvim_create_user_command('TermHtop', function()
         htop:toggle(nil, true)
+        vim.cmd 'startinsert'
       end, { nargs = '?' })
       vim.api.nvim_set_keymap('n', '<leader>h', '<cmd>TermHtop<CR>', { desc = 'Open htop in a terminal', noremap = true, silent = true })
 
@@ -52,6 +54,8 @@ return {
       }
       vim.api.nvim_create_user_command('TermPython', function()
         python:toggle(nil, true)
+        vim.cmd 'startinsert'
+
         local bufnr = vim.api.nvim_get_current_buf()
         vim.keymap.set('x', '<leader>ts', function()
           vim.api.nvim_feedkeys('"+y', 'n', false)
