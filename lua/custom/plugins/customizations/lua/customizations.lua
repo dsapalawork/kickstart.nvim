@@ -33,39 +33,39 @@ vim.opt.list = false -- Start with 'list' mode off
 
 vim.keymap.set('n', '<leader>lt', ':set list!<CR>', { desc = 'Toggle non-printable chars on and off' })
 
--- highlight trailing whitespace as red
-local highlight_trailing_whitespace_highlight_name = 'TrailingWhitespace'
-local highlight_trailing_whitespace_augroup_name = 'HighlightTrailingWhitespace'
-vim.cmd.highlight { highlight_trailing_whitespace_highlight_name, 'ctermbg=red guibg=red' }
-vim.api.nvim_create_augroup(highlight_trailing_whitespace_augroup_name, { clear = true })
-vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
-  desc = 'Highlight trailing whitespace when entering the buffer',
-  group = highlight_trailing_whitespace_augroup_name,
-  callback = function()
-    vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+$/]] }
-  end,
-})
-vim.api.nvim_create_autocmd('InsertEnter', {
-  desc = 'Stop highlighting trailing whitespace while in insert mode at the end of the offending line',
-  group = highlight_trailing_whitespace_augroup_name,
-  callback = function()
-    vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+\%#\@<!$/]] }
-  end,
-})
-vim.api.nvim_create_autocmd('InsertLeave', {
-  desc = 'Resume highlighting trailing whitespace after leaving insert mode',
-  group = highlight_trailing_whitespace_augroup_name,
-  callback = function()
-    vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+$/]] }
-  end,
-})
-vim.api.nvim_create_autocmd('BufWinLeave', {
-  desc = 'Clear trailing whitespace highlights when leaving the buffer',
-  group = highlight_trailing_whitespace_augroup_name,
-  callback = function()
-    vim.cmd [[call clearmatches()]]
-  end,
-})
+-- -- highlight trailing whitespace as red
+-- local highlight_trailing_whitespace_highlight_name = 'TrailingWhitespace'
+-- local highlight_trailing_whitespace_augroup_name = 'HighlightTrailingWhitespace'
+-- vim.cmd.highlight { highlight_trailing_whitespace_highlight_name, 'ctermbg=red guibg=red' }
+-- vim.api.nvim_create_augroup(highlight_trailing_whitespace_augroup_name, { clear = true })
+-- vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWinEnter' }, {
+--   desc = 'Highlight trailing whitespace when entering the buffer',
+--   group = highlight_trailing_whitespace_augroup_name,
+--   callback = function()
+--     vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+$/]] }
+--   end,
+-- })
+-- vim.api.nvim_create_autocmd('InsertEnter', {
+--   desc = 'Stop highlighting trailing whitespace while in insert mode at the end of the offending line',
+--   group = highlight_trailing_whitespace_augroup_name,
+--   callback = function()
+--     vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+\%#\@<!$/]] }
+--   end,
+-- })
+-- vim.api.nvim_create_autocmd('InsertLeave', {
+--   desc = 'Resume highlighting trailing whitespace after leaving insert mode',
+--   group = highlight_trailing_whitespace_augroup_name,
+--   callback = function()
+--     vim.cmd.match { highlight_trailing_whitespace_highlight_name, [[/\s\+$/]] }
+--   end,
+-- })
+-- vim.api.nvim_create_autocmd('BufWinLeave', {
+--   desc = 'Clear trailing whitespace highlights when leaving the buffer',
+--   group = highlight_trailing_whitespace_augroup_name,
+--   callback = function()
+--     vim.cmd [[call clearmatches()]]
+--   end,
+-- })
 
 vim.keymap.set('n', '<C-L>', ':nohlsearch<CR>', { desc = 'Clear highlighting', silent = true })
 
