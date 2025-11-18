@@ -5,6 +5,7 @@ return {
       tws = '\\s\\+$',
       clear_on_bufleave = false,
       palette = {
+        oil = {},
         markdown = {
           tws = 'RosyBrown',
           ['\\S\\@<=\\s\\(\\.\\|,\\)\\@='] = 'CadetBlue3',
